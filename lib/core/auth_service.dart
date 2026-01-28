@@ -1,0 +1,82 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../models/tenant.dart';
+
+class AuthService {
+  // Production URL from Railway
+  final String baseUrl = "https://web-production-d9d24.up.railway.app";
+  final _storage = const FlutterSecureStorage();
+
+  Future<String?> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final token = jsonDecode(response.body)['access_token'];
+        await _storage.write(key: 'jwt_token', value: token);
+        return token;
+      }
+    } catch (e) {
+      print('Login error: $e');
+    }
+    return null;
+  }
+
+  Future<String?> selectTenant(String tenantId) async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return null;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/select-tenant'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'tenant_id': tenantId}),
+      );
+
+      if (response.statusCode == 200) {
+        final newToken = jsonDecode(response.body)['access_token'];
+        await _storage.write(key: 'jwt_token', value: newToken);
+        return newToken;
+      }
+    } catch (e) {
+      print('Select Tenant error: $e');
+    }
+    return null;
+  }
+
+  Future<List<Tenant>> getMyTenants() async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/tenant/my'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Tenant.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print('Get Tenants error: $e');
+    }
+    return [];
+  }
+
+  Future<void> logout() async {
+    await _storage.delete(key: 'jwt_token');
+  }
+
+  Future<String?> getToken() async {
+    return await _storage.read(key: 'jwt_token');
+  }
+}

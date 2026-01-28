@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/login_screen.dart';
 
 void main() {
-  runApp(const StreamlineApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const StreamlineApp(),
+    ),
+  );
 }
 
 class StreamlineApp extends StatelessWidget {
@@ -9,12 +17,10 @@ class StreamlineApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Streamline App'),
-        ),
-      ),
+    return MaterialApp(
+      title: 'Streamline',
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
+      home: const LoginScreen(),
     );
   }
 }
