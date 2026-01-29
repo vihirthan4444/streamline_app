@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/tenant.dart';
+import '../models/user.dart';
 
 class AuthService {
   // Production URL from Railway
@@ -70,6 +71,25 @@ class AuthService {
       print('Get Tenants error: $e');
     }
     return [];
+  }
+
+  Future<User?> getCurrentUser() async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return null;
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/me'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        return User.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Get User error: $e');
+    }
+    return null;
   }
 
   Future<void> logout() async {

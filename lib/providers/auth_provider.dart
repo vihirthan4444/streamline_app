@@ -10,12 +10,15 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _token;
   bool _isTenantSelected = false;
+  String? _tenantId;
 
   User? get user => _user;
   List<Tenant> get tenants => _tenants;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _token != null;
   bool get isTenantSelected => _isTenantSelected;
+  String? get tenantId => _tenantId;
+  String? get userId => _user?.id;
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;
@@ -24,6 +27,7 @@ class AuthProvider with ChangeNotifier {
     if (token != null) {
       _token = token;
       await fetchTenants();
+      await fetchMe();
       _isLoading = false;
       notifyListeners();
       return true;
@@ -38,6 +42,11 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchMe() async {
+    _user = await _authService.getCurrentUser();
+    notifyListeners();
+  }
+
   Future<bool> selectTenant(String tenantId) async {
     _isLoading = true;
     notifyListeners();
@@ -45,6 +54,9 @@ class AuthProvider with ChangeNotifier {
     if (token != null) {
       _token = token;
       _isTenantSelected = true;
+      _tenantId = tenantId;
+      // Refresh user/scope if needed, though usually user ID is same.
+      await fetchMe();
     }
     _isLoading = false;
     notifyListeners();
@@ -57,6 +69,7 @@ class AuthProvider with ChangeNotifier {
     _user = null;
     _tenants = [];
     _isTenantSelected = false;
+    _tenantId = null;
     notifyListeners();
   }
 }
