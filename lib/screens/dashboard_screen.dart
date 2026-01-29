@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/module_provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
+import 'pos/product_grid_screen.dart';
+import 'reports/reports_screen.dart';
+import 'stock/stock_reconcile_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -15,6 +18,15 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Streamline POS"),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ReportsScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -46,10 +58,32 @@ class DashboardScreen extends StatelessWidget {
                   color: Theme.of(context).primaryColor.withOpacity(0.1),
                   child: InkWell(
                     onTap: () {
-                      // TODO: Navigate to module screen
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text("Open ${m.name}")));
+                      if (m.code == 'POS') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProductGridScreen(),
+                          ),
+                        );
+                      } else if (m.code == 'REPORTS') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ReportsScreen(),
+                          ),
+                        );
+                      } else if (m.code == 'INVENTORY') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const StockReconcileScreen(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Open ${m.name}")),
+                        );
+                      }
                     },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

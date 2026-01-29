@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../providers/pos_provider.dart';
+import 'shift_close_screen.dart';
 
 class ShiftScreen extends StatefulWidget {
   const ShiftScreen({super.key});
@@ -56,49 +57,6 @@ class _ShiftScreenState extends State<ShiftScreen> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text("Shift Opened")));
-        }
-      } else {
-        if (mounted)
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Error: ${response.body}")));
-      }
-    } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Network Error: $e")));
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _closeShift() async {
-    setState(() => _isLoading = true);
-    final token = await _storage.read(key: 'jwt_token');
-
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/pos/shift/close'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'closing_cash': double.tryParse(_amountCtrl.text) ?? 0.0,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _currentShiftId = null;
-          _openedAt = null;
-        });
-        if (mounted) {
-          context.read<PosProvider>().setShift(null);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text("Shift Closed")));
         }
       } else {
         if (mounted)
@@ -183,10 +141,15 @@ class _ShiftScreenState extends State<ShiftScreen> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: _isLoading ? null : _closeShift,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("CLOSE SHIFT"),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ShiftCloseScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text("CLOSE SHIFT"),
                 ),
               ],
             ],

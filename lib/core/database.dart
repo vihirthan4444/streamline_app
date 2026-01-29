@@ -57,12 +57,36 @@ class StockEvents extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Products, Orders, OrderItems, StockEvents])
+class Payments extends Table {
+  TextColumn get id => text()();
+  TextColumn get orderId => text().references(Orders, #id)();
+  TextColumn get method => text()(); // CASH, CARD
+  RealColumn get amount => real()();
+  DateTimeColumn get createdAt => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Products, Orders, OrderItems, StockEvents, Payments])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2; // Increment version
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.createTable(payments);
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

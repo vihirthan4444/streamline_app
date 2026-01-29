@@ -53,7 +53,7 @@ class PosProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkout() async {
+  Future<void> checkout(String method, double amount) async {
     if (_cart.isEmpty) return;
 
     _isLoading = true;
@@ -78,7 +78,21 @@ class PosProvider with ChangeNotifier {
           ),
         );
 
-    // 2. Create Items & Stock Events
+    // 2. Create Payment
+    await _db
+        .into(_db.payments)
+        .insert(
+          PaymentsCompanion.insert(
+            id: const Uuid().v4(),
+            orderId: orderId,
+            method: method,
+            amount: amount,
+            createdAt: now,
+            isSynced: const Value(false),
+          ),
+        );
+
+    // 3. Create Items & Stock Events
     for (var item in _cart) {
       await _db
           .into(_db.orderItems)
@@ -159,9 +173,46 @@ class PosProvider with ChangeNotifier {
     }
   }
 
-  // Shift Management (Simplified for V1)
+  // Shift Management
   void setShift(String? shiftId) {
     _activeShiftId = shiftId;
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> closeShift(
+    double closingCash,
+    String note,
+  ) async {
+    _isLoading = true;
+    notifyListeners();
+
+    const baseUrl = "https://web-production-d9d24.up.railway.app";
+    const storage = FlutterSecureStorage();
+    final token = await storage.read(key: 'jwt_token');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/pos/shift/close'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'closing_cash': closingCash, 'note': note}),
+      );
+
+      if (response.statusCode == 200) {
+        _activeShiftId = null;
+        // Also update local storage if needed
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(response.body);
+      }
+    } catch (e) {
+      print("Close Shift Error: $e");
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

@@ -6,6 +6,7 @@ import 'screens/login_screen.dart';
 import 'providers/theme_provider.dart';
 import 'providers/module_provider.dart';
 import 'providers/pos_provider.dart';
+import 'providers/reports_provider.dart';
 import 'core/database.dart';
 
 void main() {
@@ -29,6 +30,7 @@ void main() {
           update: (_, auth, __) =>
               PosProvider(database, auth.tenantId ?? '', auth.userId ?? ''),
         ),
+        ChangeNotifierProvider(create: (_) => ReportsProvider()),
       ],
       child: const StreamlineApp(),
     ),

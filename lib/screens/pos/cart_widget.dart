@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/pos_provider.dart';
+import 'payment_screen.dart';
 
 class CartWidget extends StatelessWidget {
   const CartWidget({super.key});
@@ -97,17 +98,17 @@ class CartWidget extends StatelessWidget {
                   ),
                   onPressed: cart.isEmpty || posProvider.isLoading
                       ? null
-                      : () async {
-                          await posProvider.checkout();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Order Completed!")),
-                            );
-                          }
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PaymentScreen(),
+                            ),
+                          );
                         },
                   child: posProvider.isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("PAY CASH", style: TextStyle(fontSize: 18)),
+                      : const Text("CHECKOUT", style: TextStyle(fontSize: 18)),
                 ),
               ),
             ],
