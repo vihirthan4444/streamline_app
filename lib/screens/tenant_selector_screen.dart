@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
+import '../providers/module_provider.dart';
 import 'dashboard_screen.dart';
 
 class TenantSelectorScreen extends StatelessWidget {
@@ -23,12 +25,19 @@ class TenantSelectorScreen extends StatelessWidget {
                       .read<AuthProvider>()
                       .selectTenant(tenants[i].id);
                   if (success && context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DashboardScreen(),
-                      ),
-                    );
+                    await Future.wait([
+                      context.read<ThemeProvider>().loadTheme(),
+                      context.read<ModuleProvider>().loadModules(),
+                    ]);
+
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DashboardScreen(),
+                        ),
+                      );
+                    }
                   }
                 },
               ),
