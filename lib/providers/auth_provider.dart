@@ -45,6 +45,22 @@ class AuthProvider with ChangeNotifier {
     return false;
   }
 
+  Future<bool> register(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+    final token = await _authService.register(email, password);
+    if (token != null) {
+      _token = token;
+      await fetchMe();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
   Future<void> fetchTenants() async {
     _tenants = await _authService.getMyTenants();
     notifyListeners();

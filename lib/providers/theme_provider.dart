@@ -28,7 +28,13 @@ class ThemeProvider with ChangeNotifier {
       useMaterial3: true,
       fontFamily:
           'Roboto', // For now, assume default or bundled font. Loading GoogleFonts specific might need more work.
+      focusColor: _getContrastColor(_hexToColor(theme.primaryColor)),
+      hintColor: Colors.grey[600],
     );
+  }
+
+  Color _getContrastColor(Color color) {
+    return color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
   }
 
   Color _hexToColor(String hexString) {

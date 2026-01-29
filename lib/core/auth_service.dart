@@ -6,7 +6,8 @@ import '../models/user.dart';
 
 class AuthService {
   // Production URL from Railway
-  final String baseUrl = "https://web-production-d9d24.up.railway.app";
+  // Production: https://web-production-d9d24.up.railway.app
+  final String baseUrl = "http://127.0.0.1:8001";
   final _storage = const FlutterSecureStorage();
 
   Future<String?> login(String email, String password) async {
@@ -22,8 +23,32 @@ class AuthService {
         await _storage.write(key: 'jwt_token', value: token);
         return token;
       }
-    } catch (e) {
-      print('Login error: $e');
+    } catch (e, stack) {
+      print('Login error details: $e');
+      print('Stack trace: $stack');
+    }
+    return null;
+  }
+
+  Future<String?> register(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final token = jsonDecode(response.body)['access_token'];
+        await _storage.write(key: 'jwt_token', value: token);
+        return token;
+      } else {
+        print('Register failed with status code: ${response.statusCode}');
+        print('Error body: ${response.body}');
+      }
+    } catch (e, stack) {
+      print('Register error details: $e');
+      print('Stack trace: $stack');
     }
     return null;
   }

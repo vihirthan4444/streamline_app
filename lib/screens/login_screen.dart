@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../core/version_service.dart';
-import 'tenant_selector_screen.dart';
+import 'register_screen.dart';
+import 'handlers/login_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,42 +46,82 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
-    final success = await context.read<AuthProvider>().login(
-      _emailController.text,
-      _passwordController.text,
+    await LoginHandler.handleLogin(
+      context: context,
+      email: _emailController.text,
+      password: _passwordController.text,
     );
-    if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const TenantSelectorScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Login Failed")));
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: _login, child: const Text("Login")),
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Login to Streamline",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).focusColor,
+                ),
+              ),
+              const SizedBox(height: 40),
+              TextField(
+                controller: _emailController,
+                style: TextStyle(color: Theme.of(context).focusColor),
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  labelStyle: TextStyle(color: Theme.of(context).hintColor),
+                  hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: Icon(
+                    Icons.email,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                style: TextStyle(color: Theme.of(context).focusColor),
+                decoration: InputDecoration(
+                  labelText: "Password",
+                  labelStyle: TextStyle(color: Theme.of(context).hintColor),
+                  hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: Icon(
+                    Icons.lock,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _login,
+                  child: const Text("Login"),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  );
+                },
+                child: const Text("New to Streamline? Register here"),
+              ),
+            ],
+          ),
         ),
       ),
     );

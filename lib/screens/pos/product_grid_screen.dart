@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/database.dart';
 import '../../providers/pos_provider.dart';
+import '../handlers/pos_handler.dart';
 import 'cart_widget.dart';
-import 'shift_screen.dart';
 
 class ProductGridScreen extends StatefulWidget {
   const ProductGridScreen({super.key});
@@ -28,27 +28,21 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("POS - Sales"),
+        title: Text(
+          "POS - Sales",
+          style: TextStyle(color: Theme.of(context).focusColor),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync),
-            onPressed: () async {
-              await posProvider.syncProducts();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Products Synced")),
-                );
-              }
-            },
+            icon: Icon(Icons.sync, color: Theme.of(context).primaryColor),
+            onPressed: () => PosHandler.handleSyncProducts(context),
           ),
           IconButton(
-            icon: const Icon(Icons.work_history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ShiftScreen()),
-              );
-            },
+            icon: Icon(
+              Icons.work_history,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: () => PosHandler.handleOpenShift(context),
           ),
         ],
       ),
@@ -65,8 +59,11 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
 
                 final products = snapshot.data!;
                 if (products.isEmpty) {
-                  return const Center(
-                    child: Text("No products found. Tap sync."),
+                  return Center(
+                    child: Text(
+                      "No products found. Tap sync.",
+                      style: TextStyle(color: Theme.of(context).focusColor),
+                    ),
                   );
                 }
 
@@ -89,16 +86,26 @@ class _ProductGridScreenState extends State<ProductGridScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.inventory, size: 32),
+                            Icon(
+                              Icons.inventory,
+                              size: 32,
+                              color: Theme.of(context).primaryColor,
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               p.name,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: Theme.of(context).focusColor,
                               ),
                             ),
-                            Text("\$${p.price.toStringAsFixed(2)}"),
+                            Text(
+                              "\$${p.price.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                              ),
+                            ),
                           ],
                         ),
                       ),

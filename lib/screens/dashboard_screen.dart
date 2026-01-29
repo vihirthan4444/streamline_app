@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/module_provider.dart';
 import '../providers/auth_provider.dart';
-import 'login_screen.dart';
 import 'pos/product_grid_screen.dart';
 import 'reports/reports_screen.dart';
 import 'stock/stock_reconcile_screen.dart';
+import 'handlers/dashboard_handler.dart';
 import 'marketplace/marketplace_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -24,19 +24,26 @@ class DashboardScreen extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Streamline POS"),
+            Text(
+              "Streamline POS",
+              style: TextStyle(color: Theme.of(context).focusColor),
+            ),
             Text(
               "Plan: ${authProvider.subscription?['plan_name'] ?? 'Loading...'}",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
+                color: Theme.of(context).hintColor,
               ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.shopping_cart),
+            icon: Icon(
+              Icons.shopping_cart,
+              color: Theme.of(context).primaryColor,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -45,17 +52,8 @@ class DashboardScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().logout();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
+            icon: Icon(Icons.logout, color: Theme.of(context).primaryColor),
+            onPressed: () => DashboardHandler.handleLogout(context),
           ),
         ],
       ),
@@ -63,21 +61,36 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(authProvider.user?.email ?? "User"),
+              accountName: Text(
+                authProvider.user?.email ?? "User",
+                style: TextStyle(color: Theme.of(context).focusColor),
+              ),
               accountEmail: Text(
                 "Plan: ${authProvider.subscription?['plan_name'] ?? 'Free'}",
+                style: TextStyle(color: Theme.of(context).hintColor),
               ),
-              currentAccountPicture: const CircleAvatar(
-                child: Icon(Icons.store),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Theme.of(
+                  context,
+                ).primaryColor.withOpacity(0.1),
+                child: Icon(Icons.store, color: Theme.of(context).primaryColor),
               ),
+              decoration: BoxDecoration(color: Theme.of(context).cardColor),
             ),
             ListTile(
-              leading: const Icon(Icons.help_outline),
-              title: const Text("Help & Support"),
-              subtitle: const Text("Chat with us on WhatsApp"),
+              leading: Icon(
+                Icons.help_outline,
+                color: Theme.of(context).primaryColor,
+              ),
+              title: Text(
+                "Help & Support",
+                style: TextStyle(color: Theme.of(context).focusColor),
+              ),
+              subtitle: Text(
+                "Chat with us on WhatsApp",
+                style: TextStyle(color: Theme.of(context).hintColor),
+              ),
               onTap: () {
-                // In a real app, use url_launcher
-                // launchUrl(Uri.parse("https://wa.me/94770000000"));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Redirecting to WhatsApp Support..."),
@@ -87,8 +100,14 @@ class DashboardScreen extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text("About Streamline"),
+              leading: Icon(
+                Icons.info_outline,
+                color: Theme.of(context).primaryColor,
+              ),
+              title: Text(
+                "About Streamline",
+                style: TextStyle(color: Theme.of(context).focusColor),
+              ),
               onTap: () {},
             ),
           ],
