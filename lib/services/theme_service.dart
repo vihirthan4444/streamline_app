@@ -9,16 +9,25 @@ class ThemeService {
   final _storage = const FlutterSecureStorage();
 
   Future<AppTheme?> getTenantTheme() async {
+    // 1. Try local cache first
+    final cached = await _storage.read(key: 'cached_theme');
+    if (cached != null) {
+      try {
+        return AppTheme.fromJson(jsonDecode(cached));
+      } catch (_) {}
+    }
+
     final token = await _storage.read(key: 'jwt_token');
     if (token == null) return null;
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/tenant-config/theme'),
+        Uri.parse('$baseUrl/config/theme'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
+        await _storage.write(key: 'cached_theme', value: response.body);
         return AppTheme.fromJson(jsonDecode(response.body));
       }
     } catch (e) {

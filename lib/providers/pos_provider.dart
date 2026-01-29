@@ -15,19 +15,29 @@ class CartItem {
   double get total => product.price * qty;
 }
 
+class PaymentItem {
+  final String method;
+  final double amount;
+  PaymentItem({required this.method, required this.amount});
+}
+
 class PosProvider with ChangeNotifier {
   final AppDatabase _db;
   final String _tenantId; // In real app, get from AuthProvider
   final String _cashierId; // In real app, get from AuthProvider
 
   List<CartItem> _cart = [];
+  List<PaymentItem> _payments = [];
   bool _isLoading = false;
   String? _activeShiftId;
 
   PosProvider(this._db, this._tenantId, this._cashierId);
 
   List<CartItem> get cart => _cart;
+  List<PaymentItem> get currentPayments => _payments;
   double get total => _cart.fold(0, (sum, item) => sum + item.total);
+  double get totalPaid => _payments.fold(0, (sum, p) => sum + p.amount);
+  double get balanceDue => total - totalPaid;
   bool get isLoading => _isLoading;
   String? get activeShiftId => _activeShiftId;
 
@@ -50,11 +60,22 @@ class PosProvider with ChangeNotifier {
 
   void clearCart() {
     _cart = [];
+    _payments = [];
     notifyListeners();
   }
 
-  Future<void> checkout(String method, double amount) async {
-    if (_cart.isEmpty) return;
+  void addPayment(String method, double amount) {
+    _payments.add(PaymentItem(method: method, amount: amount));
+    notifyListeners();
+  }
+
+  void removePayment(int index) {
+    _payments.removeAt(index);
+    notifyListeners();
+  }
+
+  Future<void> checkout() async {
+    if (_cart.isEmpty || totalPaid < total) return;
 
     _isLoading = true;
     notifyListeners();
@@ -78,19 +99,21 @@ class PosProvider with ChangeNotifier {
           ),
         );
 
-    // 2. Create Payment
-    await _db
-        .into(_db.payments)
-        .insert(
-          PaymentsCompanion.insert(
-            id: const Uuid().v4(),
-            orderId: orderId,
-            method: method,
-            amount: amount,
-            createdAt: now,
-            isSynced: const Value(false),
-          ),
-        );
+    // 2. Create Payments
+    for (var payment in _payments) {
+      await _db
+          .into(_db.payments)
+          .insert(
+            PaymentsCompanion.insert(
+              id: const Uuid().v4(),
+              orderId: orderId,
+              method: payment.method,
+              amount: payment.amount,
+              createdAt: now,
+              isSynced: const Value(false),
+            ),
+          );
+    }
 
     // 3. Create Items & Stock Events
     for (var item in _cart) {

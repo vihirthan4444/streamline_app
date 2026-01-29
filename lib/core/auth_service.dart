@@ -28,7 +28,7 @@ class AuthService {
     return null;
   }
 
-  Future<String?> selectTenant(String tenantId) async {
+  Future<Map<String, dynamic>?> selectTenant(String tenantId) async {
     final token = await _storage.read(key: 'jwt_token');
     if (token == null) return null;
 
@@ -45,12 +45,28 @@ class AuthService {
       if (response.statusCode == 200) {
         final newToken = jsonDecode(response.body)['access_token'];
         await _storage.write(key: 'jwt_token', value: newToken);
-        return newToken;
+
+        // Parse Role from JWT
+        final payload = _parseJwt(newToken);
+        return {
+          'token': newToken,
+          'role': payload['role'],
+          'tenant_id': payload['tenant_id'],
+        };
       }
     } catch (e) {
       print('Select Tenant error: $e');
     }
     return null;
+  }
+
+  Map<String, dynamic> _parseJwt(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) return {};
+    final payload = parts[1];
+    var normalized = base64Url.normalize(payload);
+    var resp = utf8.decode(base64Url.decode(normalized));
+    return jsonDecode(resp);
   }
 
   Future<List<Tenant>> getMyTenants() async {
@@ -98,5 +114,24 @@ class AuthService {
 
   Future<String?> getToken() async {
     return await _storage.read(key: 'jwt_token');
+  }
+
+  Future<Map<String, dynamic>?> getMySubscription() async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return null;
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/billing/my-subscription'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (e) {
+      print('Get Subscription error: $e');
+    }
+    return null;
   }
 }

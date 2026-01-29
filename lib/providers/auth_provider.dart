@@ -11,6 +11,8 @@ class AuthProvider with ChangeNotifier {
   String? _token;
   bool _isTenantSelected = false;
   String? _tenantId;
+  String? _role;
+  Map<String, dynamic>? _subscription;
 
   User? get user => _user;
   List<Tenant> get tenants => _tenants;
@@ -19,6 +21,12 @@ class AuthProvider with ChangeNotifier {
   bool get isTenantSelected => _isTenantSelected;
   String? get tenantId => _tenantId;
   String? get userId => _user?.id;
+  String? get role => _role;
+  Map<String, dynamic>? get subscription => _subscription;
+
+  bool hasRole(List<String> allowedRoles) {
+    return _role != null && allowedRoles.contains(_role);
+  }
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;
@@ -50,17 +58,23 @@ class AuthProvider with ChangeNotifier {
   Future<bool> selectTenant(String tenantId) async {
     _isLoading = true;
     notifyListeners();
-    final token = await _authService.selectTenant(tenantId);
-    if (token != null) {
-      _token = token;
+    final data = await _authService.selectTenant(tenantId);
+    if (data != null) {
+      _token = data['token'];
+      _role = data['role'];
       _isTenantSelected = true;
       _tenantId = tenantId;
-      // Refresh user/scope if needed, though usually user ID is same.
       await fetchMe();
+      await fetchSubscription();
     }
     _isLoading = false;
     notifyListeners();
-    return token != null;
+    return data != null;
+  }
+
+  Future<void> fetchSubscription() async {
+    _subscription = await _authService.getMySubscription();
+    notifyListeners();
   }
 
   Future<void> logout() async {
