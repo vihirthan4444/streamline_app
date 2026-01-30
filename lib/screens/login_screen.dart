@@ -62,11 +62,19 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo Placeholder
+              Icon(
+                Icons.layers, // Replace with actual logo asset when available
+                size: 64,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 16),
+              // Title Anchor
               Text(
-                "Login to Streamline",
+                "Login to Streamline POS",
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Theme.of(context).focusColor,
                 ),
               ),
@@ -78,7 +86,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: "Email",
                   labelStyle: TextStyle(color: Theme.of(context).hintColor),
                   hintStyle: TextStyle(color: Theme.of(context).hintColor),
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    // Slight border when focused
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
                   prefixIcon: Icon(
                     Icons.email,
                     color: Theme.of(context).primaryColor,
@@ -93,7 +115,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: "Password",
                   labelStyle: TextStyle(color: Theme.of(context).hintColor),
                   hintStyle: TextStyle(color: Theme.of(context).hintColor),
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
                   prefixIcon: Icon(
                     Icons.lock,
                     color: Theme.of(context).primaryColor,
@@ -107,7 +142,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _login,
-                  child: const Text("Login"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white, // Text color
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Login",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -118,7 +164,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (_) => const RegisterScreen()),
                   );
                 },
-                child: const Text("New to Streamline? Register here"),
+                child: RichText(
+                  text: TextSpan(
+                    text: "New to Streamline? ",
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    children: [
+                      TextSpan(
+                        text: "Register here",
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
