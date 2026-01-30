@@ -43,12 +43,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: "Email",
                 labelStyle: TextStyle(color: Theme.of(context).hintColor),
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
+                ),
                 prefixIcon: Icon(
                   Icons.email,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               style: TextStyle(color: Theme.of(context).focusColor),
@@ -57,12 +68,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: "Password",
                 labelStyle: TextStyle(color: Theme.of(context).hintColor),
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
+                ),
                 prefixIcon: Icon(
                   Icons.lock,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _confirmPasswordController,
               style: TextStyle(color: Theme.of(context).focusColor),
@@ -71,20 +93,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: "Confirm Password",
                 labelStyle: TextStyle(color: Theme.of(context).hintColor),
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
+                ),
                 prefixIcon: Icon(
                   Icons.lock_outline,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _register,
-              child: const Text("Create Account"),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Create Account",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Already have an account? Login"),
+              child: RichText(
+                text: TextSpan(
+                  text: "Already have an account? ",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  children: [
+                    TextSpan(
+                      text: "Login",
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

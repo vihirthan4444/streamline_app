@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'handlers/tenant_selector_handler.dart';
+import 'create_tenant_screen.dart';
 
 class TenantSelectorScreen extends StatelessWidget {
   const TenantSelectorScreen({super.key});
@@ -15,6 +16,13 @@ class TenantSelectorScreen extends StatelessWidget {
           "Select Business",
           style: TextStyle(color: Theme.of(context).focusColor),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CreateTenantScreen()),
+        ),
+        child: const Icon(Icons.add),
       ),
       body: tenants.isEmpty
           ? Center(

@@ -28,6 +28,28 @@ class AuthProvider with ChangeNotifier {
     return _role != null && allowedRoles.contains(_role);
   }
 
+  Future<bool> tryAutoLogin() async {
+    _isLoading = true;
+    notifyListeners();
+    final token = await _authService.getToken();
+    if (token != null) {
+      _token = token;
+      // Optionally fetch user here to verify token validity
+      try {
+        await fetchMe();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } catch (e) {
+        print("Auto-login failed (token invalid): $e");
+        await logout(); // Clear invalid token
+      }
+    }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
@@ -66,6 +88,28 @@ class AuthProvider with ChangeNotifier {
       }
     } catch (e) {
       print("AuthProvider Register Error: $e");
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> createTenant(String name, String businessType) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final tenant = await _authService.createTenant(name, businessType);
+      if (tenant != null) {
+        await fetchTenants();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print("AuthProvider CreateTenant Error: $e");
       _isLoading = false;
       notifyListeners();
       rethrow;

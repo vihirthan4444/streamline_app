@@ -58,6 +58,33 @@ class AuthService {
     }
   }
 
+  Future<Tenant?> createTenant(String name, String businessType) async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return null;
+
+    try {
+      final response = await _client.post(
+        Uri.parse('$baseUrl/tenant/create'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'name': name, 'business_type': businessType}),
+      );
+
+      if (response.statusCode == 200) {
+        return Tenant.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception(
+          'Create Tenant failed: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      print('Create Tenant error: $e');
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>?> selectTenant(String tenantId) async {
     final token = await _storage.read(key: 'jwt_token');
     if (token == null) return null;
