@@ -61,6 +61,7 @@ class _CreateTenantScreenState extends State<CreateTenantScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
+                // ignore: deprecated_member_use
                 value: _selectedType,
                 items: _businessTypes
                     .map((t) => DropdownMenuItem(value: t, child: Text(t)))
@@ -70,6 +71,7 @@ class _CreateTenantScreenState extends State<CreateTenantScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
+                // ignore: deprecated_member_use
                 value: 'LKR',
                 items: ['LKR', 'USD', 'EUR']
                     .map((t) => DropdownMenuItem(value: t, child: Text(t)))
