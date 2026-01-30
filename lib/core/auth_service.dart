@@ -6,13 +6,15 @@ import '../models/user.dart';
 
 class AuthService {
   // Production URL from Railway
-  // Production: https://web-production-d9d24.up.railway.app
-  final String baseUrl = "http://127.0.0.1:8001";
+  final String baseUrl = "https://web-production-d9d24.up.railway.app";
   final _storage = const FlutterSecureStorage();
+  final http.Client _client;
+
+  AuthService({http.Client? client}) : _client = client ?? http.Client();
 
   Future<String?> login(String email, String password) async {
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
@@ -22,17 +24,20 @@ class AuthService {
         final token = jsonDecode(response.body)['access_token'];
         await _storage.write(key: 'jwt_token', value: token);
         return token;
+      } else {
+        throw Exception(
+          'Login failed: ${response.statusCode} - ${response.body}',
+        );
       }
-    } catch (e, stack) {
+    } catch (e) {
       print('Login error details: $e');
-      print('Stack trace: $stack');
+      rethrow;
     }
-    return null;
   }
 
   Future<String?> register(String email, String password) async {
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$baseUrl/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
@@ -45,12 +50,12 @@ class AuthService {
       } else {
         print('Register failed with status code: ${response.statusCode}');
         print('Error body: ${response.body}');
+        throw Exception('Registration failed: ${response.body}');
       }
-    } catch (e, stack) {
+    } catch (e) {
       print('Register error details: $e');
-      print('Stack trace: $stack');
+      rethrow;
     }
-    return null;
   }
 
   Future<Map<String, dynamic>?> selectTenant(String tenantId) async {
@@ -58,7 +63,7 @@ class AuthService {
     if (token == null) return null;
 
     try {
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$baseUrl/auth/select-tenant'),
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +104,7 @@ class AuthService {
     if (token == null) return [];
 
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$baseUrl/tenant/my'),
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -119,7 +124,7 @@ class AuthService {
     if (token == null) return null;
 
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$baseUrl/auth/me'),
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -146,7 +151,7 @@ class AuthService {
     if (token == null) return null;
 
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$baseUrl/billing/my-subscription'),
         headers: {'Authorization': 'Bearer $token'},
       );

@@ -31,14 +31,21 @@ class AuthProvider with ChangeNotifier {
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();
-    final token = await _authService.login(email, password);
-    if (token != null) {
-      _token = token;
-      await fetchTenants();
-      await fetchMe();
+    try {
+      final token = await _authService.login(email, password);
+      if (token != null) {
+        _token = token;
+        await fetchTenants();
+        await fetchMe();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print("AuthProvider Login Error: $e");
       _isLoading = false;
       notifyListeners();
-      return true;
+      rethrow;
     }
     _isLoading = false;
     notifyListeners();
@@ -48,13 +55,20 @@ class AuthProvider with ChangeNotifier {
   Future<bool> register(String email, String password) async {
     _isLoading = true;
     notifyListeners();
-    final token = await _authService.register(email, password);
-    if (token != null) {
-      _token = token;
-      await fetchMe();
+    try {
+      final token = await _authService.register(email, password);
+      if (token != null) {
+        _token = token;
+        await fetchMe();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print("AuthProvider Register Error: $e");
       _isLoading = false;
       notifyListeners();
-      return true;
+      rethrow;
     }
     _isLoading = false;
     notifyListeners();

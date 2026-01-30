@@ -18,17 +18,22 @@ class RegisterHandler {
     }
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.register(email, password);
-
-    if (success && context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const TenantSelectorScreen()),
-      );
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Registration Failed")));
+    try {
+      final success = await authProvider.register(email, password);
+      if (success && context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const TenantSelectorScreen()),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        // Extract message if it's an exception we threw
+        final message = e.toString().replaceAll("Exception: ", "");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Registration Failed: $message")),
+        );
+      }
     }
   }
 }
