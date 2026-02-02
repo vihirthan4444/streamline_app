@@ -55,7 +55,7 @@ jobs:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           CI_DEPLOY_TOKEN: ${{ secrets.CI_DEPLOY_TOKEN }}
         run: |
-          curl -X POST "$BACKEND_URL/internal/app/version" \
+          curl -X POST "$BACKEND_URL/app/version/internal" \
             -H "Content-Type: application/json" \
             -H "X-CI-TOKEN: $CI_DEPLOY_TOKEN" \
             -d '{
@@ -103,7 +103,7 @@ jobs:
           CI_DEPLOY_TOKEN: ${{ secrets.CI_DEPLOY_TOKEN }}
         shell: bash
         run: |
-          curl -X POST "$BACKEND_URL/internal/app/version" \
+          curl -X POST "$BACKEND_URL/app/version/internal" \
             -H "Content-Type: application/json" \
             -H "X-CI-TOKEN: $CI_DEPLOY_TOKEN" \
             -d '{
