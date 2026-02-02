@@ -41,11 +41,11 @@ jobs:
           name: Streamline v${{ github.run_number }}
 
       - name: Upload APK to Cloudflare R2
-        uses: cloudflare/r2-upload-action@v1
-        with:
-          account-id: ${{ secrets.R2_ACCOUNT_ID }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          bucket: ${{ secrets.R2_BUCKET }}
-          file: build/app/outputs/flutter-apk/app-release.apk
-          destination: android/streamline-${{ github.ref_name }}.apk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp build/app/outputs/flutter-apk/app-release.apk \
+            s3://${{ secrets.R2_BUCKET }}/android/streamline-${{ github.ref_name }}.apk \
+            --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com

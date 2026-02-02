@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'tenant_selector_screen.dart';
+import '../services/version_check_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,6 +22,11 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuth() async {
     // Add artificial delay for branding if needed (optional)
     await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    // Check for updates (Blocking if forced)
+    await VersionCheckService().checkForUpdate(context);
 
     if (!mounted) return;
 
