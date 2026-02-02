@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  release-android:
     runs-on: ubuntu-latest
 
     steps:
@@ -49,3 +49,33 @@ jobs:
           aws s3 cp build/app/outputs/flutter-apk/app-release.apk \
             s3://${{ secrets.R2_BUCKET }}/android/streamline-${{ github.ref_name }}.apk \
             --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+
+  release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Enable Windows Configuration
+        run: flutter config --enable-windows-desktop
+
+      - name: Build Windows Exe
+        run: flutter build windows
+
+      - name: Upload Windows Exe to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          aws s3 cp \
+            build/windows/runner/Release/streamline.exe \
+            s3://$R2_BUCKET/windows/streamline-${{ github.ref_name }}.exe \
+            --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com
