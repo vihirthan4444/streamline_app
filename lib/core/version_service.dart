@@ -4,11 +4,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class VersionService {
   // Production: web-production-d9d24.up.railway.app
-  final String _baseUrl = "127.0.0.1:8001";
+  // Production: web-production-d9d24.up.railway.app
+  final String _baseUrl = "https://web-production-d9d24.up.railway.app";
 
   Future<Map<String, dynamic>?> checkVersion() async {
     try {
-      final url = Uri.parse("http://$_baseUrl/system/version");
+      final url = Uri.parse("$_baseUrl/system/version");
       final response = await http.get(url);
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

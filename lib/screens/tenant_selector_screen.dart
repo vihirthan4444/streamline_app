@@ -16,6 +16,14 @@ class TenantSelectorScreen extends StatelessWidget {
           "Select Business",
           style: TextStyle(color: Theme.of(context).focusColor),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Theme.of(context).focusColor),
+            onPressed: () {
+              context.read<AuthProvider>().logout();
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(

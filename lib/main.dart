@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
@@ -10,6 +11,7 @@ import 'providers/reports_provider.dart';
 import 'core/database.dart';
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   final database = AppDatabase();
 
   runApp(
@@ -35,6 +37,16 @@ void main() {
       child: const StreamlineApp(),
     ),
   );
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..findProxy = (uri) {
+        return "DIRECT";
+      };
+  }
 }
 
 class StreamlineApp extends StatelessWidget {

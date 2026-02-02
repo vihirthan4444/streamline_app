@@ -17,7 +17,10 @@ class VersionCheckService {
       String platformKey = 'android';
       if (Platform.isWindows) platformKey = 'windows';
 
-      final response = await http.get(Uri.parse("$baseUrl/api/v1/app/version"));
+      print("DEBUG: BaseURL is '$baseUrl'");
+      final uri = Uri.parse("$baseUrl/api/v1/app/version");
+      print("DEBUG: Requesting '$uri'");
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

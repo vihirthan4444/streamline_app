@@ -13,11 +13,20 @@ class ModuleProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> loadModules() async {
+    // Avoid notifying if already loading or no change
+    if (_isLoading) return;
+
     _isLoading = true;
     notifyListeners();
-    _modules = await _moduleService.getTenantModules();
-    _isLoading = false;
-    notifyListeners();
+
+    try {
+      _modules = await _moduleService.getTenantModules();
+    } catch (e) {
+      print("Error loading modules: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   bool isEnabled(String code) {
