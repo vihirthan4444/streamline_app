@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../models/app_module.dart';
 import '../services/module_service.dart';
 
@@ -31,5 +32,17 @@ class ModuleProvider with ChangeNotifier {
 
   bool isEnabled(String code) {
     return _modules.any((m) => m.code == code && m.enabled);
+  }
+
+  @override
+  void notifyListeners() {
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        super.notifyListeners();
+      });
+    } else {
+      super.notifyListeners();
+    }
   }
 }

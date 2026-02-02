@@ -19,13 +19,22 @@ class ModuleService {
     }
 
     final token = await _storage.read(key: 'jwt_token');
-    if (token == null) return [];
+    if (token == null) {
+      print("[ModuleService] Token is null");
+      return [];
+    }
 
     try {
+      final url = Uri.parse('$baseUrl/config/my-modules');
+      print("[ModuleService] Fetching modules from: $url");
+
       final response = await http.get(
-        Uri.parse('$baseUrl/config/my-modules'),
+        url,
         headers: {'Authorization': 'Bearer $token'},
       );
+
+      print("[ModuleService] Response Status: ${response.statusCode}");
+      print("[ModuleService] Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         await _storage.write(key: 'cached_modules', value: response.body);
@@ -33,7 +42,7 @@ class ModuleService {
         return data.map((json) => AppModule.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Get Modules error: $e');
+      print('[ModuleService] Get Modules error: $e');
     }
     return [];
   }

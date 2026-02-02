@@ -36,107 +36,277 @@ class _MarketplaceScreenState extends State<MarketplaceScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg =
+        isDark ? const Color(0xFF121212) : const Color(0xFFF0F2F5);
+    final cardBg = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final primaryColor = Theme.of(context).primaryColor;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
     return Scaffold(
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: const Text("Marketplace"),
+        title: Text(
+          "Marketplace",
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: textColor),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: primaryColor,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: primaryColor,
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
           tabs: const [
-            Tab(text: "Themes", icon: Icon(Icons.palette)),
-            Tab(text: "Modules", icon: Icon(Icons.extension)),
+            Tab(text: "Themes", icon: Icon(Icons.palette_outlined)),
+            Tab(text: "Modules", icon: Icon(Icons.extension_outlined)),
           ],
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(primaryColor),
+                  ),
+                  const SizedBox(height: 16),
+                  Text("Loading Marketplace...",
+                      style: TextStyle(color: Colors.grey[600])),
+                ],
+              ),
+            )
           : TabBarView(
               controller: _tabController,
-              children: [_buildThemeGrid(), _buildModuleList()],
+              children: [
+                _buildThemeGrid(isDark, cardBg, textColor),
+                _buildModuleList(isDark, cardBg, textColor, primaryColor),
+              ],
             ),
     );
   }
 
-  Widget _buildThemeGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: _themes.length,
-      itemBuilder: (context, index) {
-        final t = _themes[index];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Image.network(
-                  t['preview_url'],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey,
-                    child: const Icon(Icons.image),
+  Widget _buildThemeGrid(bool isDark, Color cardBg, Color textColor) {
+    if (_themes.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.palette_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "No themes available yet",
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Check back soon for new looks!",
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: GridView.builder(
+          padding: const EdgeInsets.all(24),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 350,
+            childAspectRatio: 0.85,
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+          ),
+          itemCount: _themes.length,
+          itemBuilder: (context, index) {
+            final t = _themes[index];
+            return Container(
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
-                ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t['name'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "\$${t['price']}",
-                      style: TextStyle(color: Theme.of(context).primaryColor),
-                    ),
-                    const SizedBox(height: 4),
-                    SizedBox(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Image.network(
+                      t['preview_url'] ?? '',
+                      fit: BoxFit.cover,
                       width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: isDark ? Colors.grey[800] : Colors.grey[200],
+                        child: Center(
+                          child: Icon(Icons.image_not_supported,
+                              size: 40, color: Colors.grey[400]),
                         ),
-                        onPressed: () => _buyTheme(t['id']),
-                        child: const Text("APPLY"),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t['name'],
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "\$${t['price']}",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              onPressed: () => _buyTheme(t['id']),
+                              child: const Text("Apply Theme"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
-  Widget _buildModuleList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _modules.length,
-      itemBuilder: (context, index) {
-        final m = _modules[index];
-        return Card(
-          child: ListTile(
-            leading: const Icon(Icons.extension, size: 40),
-            title: Text(m['name']),
-            subtitle: Text(m['description']),
-            trailing: Text(
-              "\$${m['price']}",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _buildModuleList(
+      bool isDark, Color cardBg, Color textColor, Color primaryColor) {
+    if (_modules.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.extension_off_outlined,
+                size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "No modules available yet",
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             ),
-            onTap: () => _activateModule(m['code']),
-          ),
-        );
-      },
+            const SizedBox(height: 8),
+            Text(
+              "Check back soon for new features!",
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: ListView.separated(
+          padding: const EdgeInsets.all(24),
+          itemCount: _modules.length,
+          separatorBuilder: (ctx, i) => const SizedBox(height: 16),
+          itemBuilder: (context, index) {
+            final m = _modules[index];
+            return Container(
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                leading: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.extension, color: primaryColor, size: 28),
+                ),
+                title: Text(
+                  m['name'],
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 6.0),
+                  child: Text(
+                    m['description'],
+                    style: TextStyle(color: Colors.grey[600], height: 1.3),
+                  ),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "\$${m['price']}",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        size: 14, color: Colors.grey),
+                  ],
+                ),
+                onTap: () => _activateModule(m['code']),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
