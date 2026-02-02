@@ -2,7 +2,8 @@ name: Flutter CD
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -37,8 +38,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
-          tag_name: v${{ github.run_number }}
-          name: Streamline v${{ github.run_number }}
 
       - name: Upload APK to Cloudflare R2
         env:
@@ -46,7 +45,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          aws s3 cp build/app/outputs/flutter-apk/app-release.apk \
+          aws s3 cp \
+            build/app/outputs/flutter-apk/app-release.apk \
             s3://${{ secrets.R2_BUCKET }}/android/streamline-${{ github.ref_name }}.apk \
             --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
 
@@ -55,7 +55,7 @@ jobs:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           CI_DEPLOY_TOKEN: ${{ secrets.CI_DEPLOY_TOKEN }}
         run: |
-          curl -X POST "$BACKEND_URL/app/version/internal" \
+          curl -X POST "$BACKEND_URL/internal/app/version" \
             -H "Content-Type: application/json" \
             -H "X-CI-TOKEN: $CI_DEPLOY_TOKEN" \
             -d '{
@@ -69,6 +69,7 @@ jobs:
 
   release-windows:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -77,23 +78,23 @@ jobs:
         with:
           channel: stable
 
-      - name: Enable Windows Configuration
+      - name: Enable Windows
         run: flutter config --enable-windows-desktop
 
-      - name: Build Windows Exe
-        run: flutter build windows
+      - name: Build Windows
+        run: flutter build windows --release
 
       - name: Upload Windows Exe to Cloudflare R2
+        shell: bash
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-        shell: bash
         run: |
           aws s3 cp \
-            build/windows/x64/runner/Release/streamline_app.exe \
+            build/windows/runner/Release/streamline_app.exe \
             s3://$R2_BUCKET/windows/streamline-${{ github.ref_name }}.exe \
             --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com
 
@@ -103,7 +104,7 @@ jobs:
           CI_DEPLOY_TOKEN: ${{ secrets.CI_DEPLOY_TOKEN }}
         shell: bash
         run: |
-          curl -X POST "$BACKEND_URL/app/version/internal" \
+          curl -X POST "$BACKEND_URL/internal/app/version" \
             -H "Content-Type: application/json" \
             -H "X-CI-TOKEN: $CI_DEPLOY_TOKEN" \
             -d '{
