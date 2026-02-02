@@ -94,7 +94,7 @@ jobs:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
         run: |
           aws s3 cp \
-            build/windows/runner/Release/streamline_app.exe \
+            build/windows/x64/runner/Release/streamline_app.exe \
             s3://$R2_BUCKET/windows/streamline-${{ github.ref_name }}.exe \
             --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com
 
